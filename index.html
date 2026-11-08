@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101a23">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='84'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<title>Mosslight — A little night adventure</title>
+<style>
+:root{color-scheme:dark;--ink:#eaf1dd;--muted:#a1b4a1;--lime:#d8f28b;--mint:#8be3b6;--panel:#1a2930;--line:#35494b;--gold:#ffcf77}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#263c3a 0,#17272c 42%,#101a23 100%);color:var(--ink);font-family:ui-rounded,"Trebuchet MS",system-ui,sans-serif;display:flex;justify-content:center;align-items:center;padding:20px;overflow-x:hidden}
+button{font:inherit;color:inherit}.shell{width:min(100%,1040px);display:grid;grid-template-columns:minmax(0,1.35fr) minmax(250px,.65fr);gap:20px;align-items:stretch}
+.game-panel,.side-panel{background:linear-gradient(145deg,rgba(32,49,54,.96),rgba(22,35,42,.96));border:1px solid #405351;border-radius:22px;box-shadow:0 24px 70px #080f1399,inset 0 1px #ffffff0c}.game-panel{padding:18px;position:relative;overflow:hidden}.topline{display:flex;align-items:center;justify-content:space-between;margin:0 1px 14px}.brand{display:flex;align-items:center;gap:11px}.brand-icon{width:37px;height:37px;border-radius:12px;background:#d8f28b;color:#21352e;display:grid;place-items:center;font-size:21px;box-shadow:0 4px 18px #d8f28b33}.brand h1{font-size:20px;line-height:1;margin:0;letter-spacing:-.04em}.brand small{display:block;color:#9eb4a3;font-size:10px;letter-spacing:.15em;text-transform:uppercase;margin-top:5px}.actions{display:flex;gap:8px}.icon-btn{border:1px solid #4b6060;background:#24363b;border-radius:10px;width:38px;height:36px;cursor:pointer;font-size:16px;transition:.18s}.icon-btn:hover,.icon-btn:focus-visible{background:#344a49;outline:2px solid #d8f28b55}
+.hud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}.stat{padding:9px 12px;border:1px solid #35494b;background:#152329a8;border-radius:12px;min-height:51px}.stat label{display:block;color:#91a69b;font-size:9px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:3px}.stat strong{font-size:15px;letter-spacing:.02em}.hearts{letter-spacing:3px;color:#ff8f85;font-size:15px!important}
+.board-wrap{position:relative;background:#142327;border:1px solid #4b6058;border-radius:15px;padding:7px;box-shadow:inset 0 0 36px #07111699;overflow:hidden}.board{width:100%;aspect-ratio:17/11;display:block;border-radius:10px;image-rendering:pixelated}.toast{position:absolute;left:50%;top:15px;transform:translate(-50%,-12px);background:#17251feF;border:1px solid #a8cc7c77;border-radius:20px;padding:7px 13px;font-size:12px;color:#e5f6b6;opacity:0;transition:.2s;pointer-events:none;white-space:nowrap}.toast.show{opacity:1;transform:translate(-50%,0)}
+.game-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 3px 0;color:#a6b8aa;font-size:11px}.keycap{display:inline-grid;place-items:center;min-width:22px;height:21px;padding:0 5px;border:1px solid #536565;border-bottom-width:2px;border-radius:6px;color:#dce7d4;background:#273a3d;font-size:10px;margin:0 2px}.side-panel{padding:22px;display:flex;flex-direction:column;justify-content:space-between;min-height:100%}.eyebrow{font-size:10px;letter-spacing:.2em;color:var(--mint);text-transform:uppercase;font-weight:700}.side-panel h2{font-size:28px;line-height:1.04;letter-spacing:-.045em;margin:12px 0 10px}.intro{font-size:13px;line-height:1.6;color:#adc0b3;margin:0}.mission{margin:24px 0 18px;padding:15px;border:1px solid #42544d;border-radius:14px;background:#18282a}.mission-title{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#92aa9b;margin-bottom:9px}.objective{display:flex;align-items:center;gap:10px;font-size:13px;color:#dbe7d7}.objective .orb{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#394633;color:#e7f89d;font-size:14px;box-shadow:0 0 15px #d5ef8270}.progress{margin-top:11px;height:5px;background:#314141;border-radius:9px;overflow:hidden}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#97d99e,#e1f29a);transition:width .25s}.hint{margin-top:8px;font-size:11px;color:#9fb0a3}
+.controls-row{display:flex;align-items:end;justify-content:space-between;gap:10px}.tip{max-width:155px;color:#9eb0a4;font-size:11px;line-height:1.5}.dpad{display:grid;grid-template:repeat(2,42px)/repeat(3,42px);gap:4px;touch-action:none}.dpad button{border:1px solid #536863;background:#263a3c;border-radius:11px;color:#e4eedb;font-size:18px;cursor:pointer;box-shadow:0 3px #162629;touch-action:none;user-select:none;-webkit-user-select:none}.dpad button:active{transform:translateY(2px);box-shadow:0 1px #162629;background:#405650}.dpad .up{grid-column:2;grid-row:1}.dpad .left{grid-column:1;grid-row:2}.dpad .down{grid-column:2;grid-row:2}.dpad .right{grid-column:3;grid-row:2}.credits{border-top:1px solid #36484a;padding-top:13px;margin-top:22px;color:#82978c;font-size:10px;display:flex;justify-content:space-between}.credits b{color:#c6d6c6;font-weight:500}
+.overlay{position:absolute;inset:0;z-index:2;background:#101b22c9;backdrop-filter:blur(5px);display:grid;place-items:center;padding:22px}.overlay[hidden]{display:none}.dialog{width:min(100%,360px);padding:26px 25px 22px;text-align:center;border:1px solid #5b7364;border-radius:20px;background:linear-gradient(145deg,#283d3a,#192a30);box-shadow:0 18px 60px #060e11aa}.dialog-icon{font-size:39px;filter:drop-shadow(0 0 18px #e2f09566)}.dialog h2{font-size:28px;letter-spacing:-.04em;margin:8px 0}.dialog p{font-size:13px;color:#b1c2b3;line-height:1.55;margin:9px auto 19px;max-width:280px}.primary{border:0;border-radius:12px;background:var(--lime);color:#223229;font-weight:800;padding:12px 20px;cursor:pointer;box-shadow:0 4px 0 #91ae64;transition:.15s}.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}.primary:active{transform:translateY(2px);box-shadow:0 1px #91ae64}.small-note{font-size:10px!important;color:#8da397!important;margin:13px 0 0!important}
+@media(max-width:760px){body{padding:12px;align-items:flex-start}.shell{grid-template-columns:1fr;max-width:560px;gap:12px}.game-panel{padding:13px;border-radius:18px}.side-panel{padding:17px;border-radius:18px;min-height:unset}.side-panel h2{font-size:24px;margin:8px 0}.side-top{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.eyebrow{grid-column:1/-1}.intro{font-size:12px}.mission{grid-column:1/-1;margin:7px 0 13px}.controls-row{align-items:center}.credits{margin-top:14px}.game-footer{font-size:10px}.board-wrap{padding:5px}.overlay{padding:8px}.dialog{padding:11px 14px 10px}.dialog-icon{font-size:23px}.dialog h2{font-size:19px;line-height:1.05;margin:4px 0}.dialog p{font-size:10px;line-height:1.3;margin:5px auto 8px}.dialog .primary{padding:9px 16px;font-size:12px}.dialog .small-note{display:none}}
+@media(max-width:400px){body{padding:8px}.game-panel{padding:10px}.brand h1{font-size:18px}.hud{gap:5px}.stat{padding:7px 8px;min-height:47px}.stat strong{font-size:13px}.game-footer{font-size:9px}.side-panel{padding:14px}.dpad{grid-template:repeat(2,38px)/repeat(3,38px)}}
+</style>
+</head>
+<body>
+<main class="shell" aria-label="Mosslight game">
+<section class="game-panel">
+  <div class="topline"><div class="brand"><div class="brand-icon">✦</div><div><h1>Mosslight</h1><small>the greenhouse after dark</small></div></div><div class="actions"><button class="icon-btn" id="soundBtn" aria-label="Toggle sound" title="Toggle sound">♫</button><button class="icon-btn" id="restartBtn" aria-label="Restart game" title="Restart">↻</button></div></div>
+  <div class="hud"><div class="stat"><label>Lantern hearts</label><strong class="hearts" id="hearts">♥♥♥</strong></div><div class="stat"><label>Glow spores</label><strong id="sporeCount">0 / 6</strong></div><div class="stat"><label>Steps taken</label><strong id="stepCount">0</strong></div></div>
+  <div class="board-wrap"><canvas class="board" id="board" aria-label="Greenhouse maze game board"></canvas><div class="toast" id="toast" role="status"></div>
+    <div class="overlay" id="overlay"><div class="dialog"><div class="dialog-icon" id="dialogIcon">🌙</div><h2 id="dialogTitle">A little light goes a long way</h2><p id="dialogText">The greenhouse has gone quiet. Gather all six glow spores, dodge the thornlings, and find the garden gate.</p><button class="primary" id="playBtn">Step into the garden</button><p class="small-note">Move with WASD, arrow keys, or the on-screen arrows.</p></div></div>
+  </div>
+  <div class="game-footer"><span><span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span> or arrow keys to move</span><span>Find the gate ✧</span></div>
+</section>
+<aside class="side-panel">
+  <div class="side-top"><div class="eyebrow">A pocket-sized adventure</div><h2>Light the way<br>home.</h2><p class="intro">You’re the last keeper in the Moonlit Conservatory. Pick up its lost glow spores before the thornlings find you.</p>
+    <div class="mission"><div class="mission-title">Tonight’s little mission</div><div class="objective"><span class="orb">✦</span><span>Gather <b id="missionCount">6 glow spores</b><br>then reach the garden gate.</span></div><div class="progress"><span id="progress"></span></div><div class="hint" id="missionHint">The gate stays asleep until it’s bright.</div></div>
+  </div>
+  <div><div class="controls-row"><div class="tip">Every step moves the thornlings too. Keep a little distance and mind your three hearts.</div><div class="dpad" aria-label="Directional controls"><button class="up" data-dir="up" aria-label="Move up">▲</button><button class="left" data-dir="left" aria-label="Move left">◀</button><button class="down" data-dir="down" aria-label="Move down">▼</button><button class="right" data-dir="right" aria-label="Move right">▶</button></div></div><div class="credits"><span>Made for a quiet evening</span><b>✧ No rush, just glow ✧</b></div></div>
+</aside>
+</main>
+<script>
+(() => {
+  const canvas = document.getElementById('board'), ctx = canvas.getContext('2d');
+  const COLS = 17, ROWS = 11, HEARTS = 3;
+  const start = {x:1,y:1}, gate = {x:15,y:9};
+  const walls = new Set([
+    '6,1','6,2','6,3','6,4','6,5','6,6', '10,3','11,3','10,4',
+    '3,7','4,7','5,7','12,5','12,6','12,7','8,8','9,8','10,8','2,4','2,5'
+  ]);
+  const sporeSpots = [{x:11,y:1},{x:3,y:4},{x:10,y:6},{x:6,y:8},{x:12,y:9},{x:14,y:3}];
+  const initialEnemies = [{x:15,y:1},{x:1,y:9},{x:15,y:7}];
+  let player, enemies, spores, hearts, steps, active, finished, soundOn, toastTimer;
+  const $ = id => document.getElementById(id);
+  const tile = () => Math.min(canvas.width/COLS, canvas.height/ROWS);
+  function resize(){
+    const rect=canvas.getBoundingClientRect(), dpr=Math.min(devicePixelRatio||1,2);
+    canvas.width=Math.round(rect.width*dpr); canvas.height=Math.round(rect.height*dpr); draw();
+  }
+  function reset(showIntro=false){
+    player={...start}; enemies=initialEnemies.map(e=>({...e})); spores=sporeSpots.map(p=>({...p,got:false}));
+    hearts=HEARTS;steps=0;active=!showIntro;finished=false;updateHud();draw();
+    if(showIntro) showOverlay('🌙','A little light goes a long way','The greenhouse has gone quiet. Gather all six glow spores, dodge the thornlings, and find the garden gate.','Step into the garden');
+    else hideOverlay();
+  }
+  function updateHud(){
+    $('hearts').textContent='♥'.repeat(hearts)+'♡'.repeat(HEARTS-hearts);
+    $('sporeCount').textContent=`${spores.filter(s=>s.got).length} / ${spores.length}`;
+    $('stepCount').textContent=steps;
+    const n=spores.filter(s=>s.got).length;
+    $('progress').style.width=`${n/spores.length*100}%`;
+    $('missionHint').textContent=n===spores.length?'The garden gate is glowing — go find it!':'The gate stays asleep until it’s bright.';
+  }
+  function showOverlay(icon,title,text,button){ $('dialogIcon').textContent=icon;$('dialogTitle').textContent=title;$('dialogText').textContent=text;$('playBtn').textContent=button;$('overlay').hidden=false; }
+  function hideOverlay(){ $('overlay').hidden=true; }
+  function toast(text){const el=$('toast');el.textContent=text;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1250);}
+  function sound(freq=620,duration=.08,type='sine'){
+    if(!soundOn)return;try{const a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.055,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+duration);o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+duration);o.onended=()=>a.close();}catch(e){}
+  }
+  function inside(x,y){return x>0&&x<COLS-1&&y>0&&y<ROWS-1&&!walls.has(`${x},${y}`)}
+  function bfs(from,to){
+    const q=[{...from,path:[]}],seen=new Set([`${from.x},${from.y}`]);
+    while(q.length){const p=q.shift();if(p.x===to.x&&p.y===to.y)return p.path;
+      for(const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){const x=p.x+dx,y=p.y+dy,k=`${x},${y}`;if(inside(x,y)&&!seen.has(k)){seen.add(k);q.push({x,y,path:[...p.path,{x,y}]});}}
+    }return [];
+  }
+  function moveEnemy(enemy){const path=bfs(enemy,player);if(path.length){const next=path[0];enemy.x=next.x;enemy.y=next.y;}}
+  function damage(){
+    hearts--;sound(160,.22,'sawtooth');toast('A thornling caught your trail!');
+    if(hearts<=0){active=false;finished=true;updateHud();draw();showOverlay('🕯️','The garden grew a little too wild','Your lantern went out after '+steps+' steps. The spores you found are lost to the dark — want another try?','Try again');return;}
+    player={...start};enemies=initialEnemies.map(e=>({...e}));updateHud();
+  }
+  function move(dx,dy){
+    if(!active||finished)return;
+    const x=player.x+dx,y=player.y+dy;if(!inside(x,y))return;
+    player={x,y};steps++;
+    const s=spores.find(a=>!a.got&&a.x===x&&a.y===y);
+    if(s){s.got=true;sound(880,.16);toast('Glow spore found! ✦');}
+    const collected=spores.filter(a=>a.got).length;
+    if(x===gate.x&&y===gate.y){
+      if(collected===spores.length){active=false;finished=true;sound(1040,.4);updateHud();draw();showOverlay('🌱','The conservatory is glowing!','You brought every little light home in '+steps+' steps. The thornlings tip their heads as the garden wakes.','Play again');return;}
+      toast(`${spores.length-collected} more glow ${spores.length-collected===1?'spore':'spores'} to wake the gate.`);
+    }
+    if(steps%2===0){enemies.forEach(moveEnemy);if(enemies.some(e=>e.x===player.x&&e.y===player.y)){damage();if(hearts<=0)return;}}
+    updateHud();draw();
+  }
+  function roundRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+  function draw(){
+    if(!ctx)return;const d=window.devicePixelRatio||1,w=canvas.width,h=canvas.height;if(!w||!h)return;
+    const t=Math.min(w/COLS,h/ROWS),ox=(w-t*COLS)/2,oy=(h-t*ROWS)/2;
+    ctx.clearRect(0,0,w,h);ctx.fillStyle='#132226';ctx.fillRect(0,0,w,h);
+    // soft ambient lantern halo
+    const halo=ctx.createRadialGradient(ox+(player?.x||1)*t,oy+(player?.y||1)*t,0,ox+(player?.x||1)*t,oy+(player?.y||1)*t,t*6);halo.addColorStop(0,'#d7ee7415');halo.addColorStop(1,'#d7ee7400');ctx.fillStyle=halo;ctx.fillRect(0,0,w,h);
+    for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+      const px=ox+x*t,py=oy+y*t,k=`${x},${y}`;
+      if(x===0||y===0||x===COLS-1||y===ROWS-1||walls.has(k)){
+        ctx.fillStyle='#31473f';ctx.fillRect(px,py,t,t);ctx.fillStyle='#425b4e';ctx.fillRect(px+1,py+1,t-2,t*.15);ctx.fillStyle='#273a36';ctx.fillRect(px+1,py+t*.78,t-2,t*.2);
+        if((x+y)%3===0){ctx.fillStyle='#71835a';ctx.globalAlpha=.5;ctx.fillRect(px+t*.2,py+t*.36,t*.17,t*.08);ctx.globalAlpha=1;}
+      }else{
+        ctx.fillStyle=((x*7+y*11)%4===0)?'#243a35':'#203630';ctx.fillRect(px,py,t,t);
+        ctx.strokeStyle='#31463c';ctx.globalAlpha=.38;ctx.lineWidth=Math.max(1,t*.018);ctx.strokeRect(px+.5,py+.5,t-1, t-1);ctx.globalAlpha=1;
+        if((x*13+y*3)%11===0){ctx.fillStyle='#7b9b66';ctx.globalAlpha=.6;ctx.beginPath();ctx.ellipse(px+t*.71,py+t*.7,t*.12,t*.045,-.5,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+      }
+    }
+    // gate
+    const gx=ox+gate.x*t,gy=oy+gate.y*t,awake=spores.every(s=>s.got);
+    ctx.save();ctx.translate(gx+t/2,gy+t/2);ctx.shadowColor=awake?'#e7ff9a':'#ab8b59';ctx.shadowBlur=t*(awake?1.1:.35);
+    ctx.strokeStyle=awake?'#e5f69b':'#9d8760';ctx.lineWidth=t*.1;ctx.beginPath();ctx.arc(0,t*.08,t*.28,Math.PI,0);ctx.lineTo(t*.28,t*.33);ctx.moveTo(-t*.28,t*.08);ctx.lineTo(-t*.28,t*.33);ctx.stroke();
+    ctx.fillStyle=awake?'#d9f38d':'#82724f';ctx.beginPath();ctx.arc(0,-t*.04,t*.045,0,Math.PI*2);ctx.fill();ctx.restore();
+    // spores
+    spores.filter(s=>!s.got).forEach((s,i)=>{const x=ox+(s.x+.5)*t,y=oy+(s.y+.5)*t;const pulse=.85+Math.sin(Date.now()/330+i*1.7)*.12;ctx.save();ctx.shadowColor='#dcf68c';ctx.shadowBlur=t*.55;ctx.fillStyle='#dff59a';ctx.beginPath();ctx.arc(x,y,t*.13*pulse,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f9ffd5';ctx.beginPath();ctx.arc(x-t*.035,y-t*.04,t*.045,0,Math.PI*2);ctx.fill();ctx.restore();});
+    // thornlings
+    enemies.forEach((e,i)=>{const x=ox+(e.x+.5)*t,y=oy+(e.y+.5)*t;ctx.save();ctx.translate(x,y);ctx.shadowColor='#ff9275';ctx.shadowBlur=t*.4;ctx.fillStyle='#bd695b';ctx.beginPath();ctx.arc(0,t*.045,t*.25,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e49b72';ctx.beginPath();ctx.moveTo(-t*.18,-t*.12);ctx.lineTo(-t*.28,-t*.35);ctx.lineTo(-t*.04,-t*.22);ctx.moveTo(t*.12,-t*.18);ctx.lineTo(t*.29,-t*.32);ctx.lineTo(t*.23,-t*.08);ctx.fill();ctx.fillStyle='#fff0c1';ctx.beginPath();ctx.arc(-t*.08,t*.02,t*.035,0,Math.PI*2);ctx.arc(t*.08,t*.02,t*.035,0,Math.PI*2);ctx.fill();ctx.restore();});
+    // keeper + lantern
+    if(player){const x=ox+(player.x+.5)*t,y=oy+(player.y+.5)*t;ctx.save();ctx.translate(x,y);ctx.shadowColor='#eff79a';ctx.shadowBlur=t*.5;ctx.fillStyle='#d7e5b4';ctx.beginPath();ctx.arc(0,t*.01,t*.23,0,Math.PI*2);ctx.fill();ctx.fillStyle='#577c69';ctx.beginPath();ctx.arc(0,-t*.08,t*.22,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle='#f5cb70';ctx.beginPath();ctx.arc(t*.2,t*.12,t*.07,0,Math.PI*2);ctx.fill();ctx.fillStyle='#29352e';ctx.beginPath();ctx.arc(-t*.075,0,t*.022,0,Math.PI*2);ctx.arc(t*.075,0,t*.022,0,Math.PI*2);ctx.fill();ctx.restore();}
+  }
+  const dirs={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+  document.addEventListener('keydown',e=>{const key=e.key.toLowerCase(),dir={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'}[key];if(dir){e.preventDefault();move(...dirs[dir]);}else if(key==='r'){reset(false);}else if(key==='escape'&&active){active=false;showOverlay('⏸','Take a breath','Your garden will wait right here.','Keep playing');}});
+  document.querySelectorAll('[data-dir]').forEach(btn=>{const act=e=>{e.preventDefault();const d=dirs[btn.dataset.dir];move(...d);};btn.addEventListener('pointerdown',act);btn.addEventListener('click',e=>e.preventDefault());});
+  $('playBtn').addEventListener('click',()=>{if(finished)reset(false);else if(!active){active=true;hideOverlay();}else{active=true;hideOverlay();}});
+  $('restartBtn').addEventListener('click',()=>reset(false));
+  $('soundBtn').addEventListener('click',()=>{soundOn=!soundOn;$('soundBtn').textContent=soundOn?'♫':'♩';$('soundBtn').setAttribute('aria-label',soundOn?'Mute sound':'Enable sound');if(soundOn)sound(660,.1);});
+  soundOn=false;reset(true);new ResizeObserver(resize).observe(canvas);window.addEventListener('resize',resize);
+  setInterval(()=>{if(active)draw();},90);
+})();
+</script>
+</body>
+</html>
