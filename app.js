@@ -7,6 +7,7 @@ let toastTimer;
 let replyTone = '温柔';
 let chatHistory = [];
 let activeReplies = 0;
+let aiServiceStatusMessage = '正在检查 AI 服务…聊天内容会发送到你配置的 AI 服务；便签和计划仍只保存在本机。';
 
 function setAvatarReplying(isReplying) {
   const character = $('#character');
@@ -47,26 +48,41 @@ function escapeHTML(text) {
 function timeNow() {
   return new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
 }
-function appendMessage(text, who) {
+function appendMessage(text, who, sources = []) {
   const row = document.createElement('div');
   row.className = `message-row ${who === 'user' ? 'user-row' : 'assistant-row'}`;
   const safe = escapeHTML(text).replace(/\n/g,'<br>');
-  row.innerHTML = `${who === 'assistant' ? '<span class="message-avatar">m</span>' : ''}<div class="message-content"><span class="message-author">${who === 'assistant' ? 'Mori' : '小满'} <time>${timeNow()}</time></span><div class="bubble">${safe}</div>${who === 'assistant' ? '<div class="message-reactions"><button class="reaction" aria-label="喜欢">♡</button><button class="reaction" aria-label="复制">▢</button></div>' : ''}</div>${who === 'user' ? '<span class="message-avatar">林</span>' : ''}`;
+  const sourceLinks = sources.length ? `<div class="message-sources"><span>参考来源</span>${sources.map((source) => `<a href="${escapeHTML(source.uri)}" target="_blank" rel="noopener noreferrer">${escapeHTML(source.title || new URL(source.uri).hostname)}</a>`).join('')}</div>` : '';
+  row.innerHTML = `${who === 'assistant' ? '<span class="message-avatar">m</span>' : ''}<div class="message-content"><span class="message-author">${who === 'assistant' ? 'Mori' : '小满'} <time>${timeNow()}</time></span><div class="bubble">${safe}</div>${sourceLinks}${who === 'assistant' ? '<div class="message-reactions"><button class="reaction" aria-label="喜欢">♡</button><button class="reaction" aria-label="复制">▢</button><button class="reaction speak-button" aria-label="朗读回复" title="朗读回复">🔊</button></div>' : ''}</div>${who === 'user' ? '<span class="message-avatar">林</span>' : ''}`;
   messages.appendChild(row);
   messages.scrollTop = messages.scrollHeight;
   return row;
 }
-function buildReply(text) {
-  const match = replyGroups.find((group) => group.match.test(text));
-  if (match) return match.replies[Math.floor(Math.random() * match.replies.length)];
-  if (/\?$|吗[？?]?$|什么|怎么|如何|为什么/.test(text)) return `这个问题问得好～我会先从你现在的感受和实际情况出发来想。${greetings[Math.floor(Math.random()*greetings.length)]}\n\n你最在意的是哪一部分？多一点背景的话，我可以给你更贴近的建议。`;
-  return `${greetings[Math.floor(Math.random()*greetings.length)]}\n\n关于「${text.slice(0,30)}${text.length>30?'…':''}」，我们可以慢慢聊。你希望我先帮你分析一下，还是先听你多分享一点？`;
+let voiceSpeaking = false;
+function updateAvatarActivity() { setAvatarReplying(activeReplies > 0 || voiceSpeaking); }
+function setReplyState(isReplying) {
+  activeReplies = Math.max(0, activeReplies + (isReplying ? 1 : -1));
+  updateAvatarActivity();
 }
-function sendMessage(text) {
+async function requestMoriReply() {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tone: replyTone,
+      messages: chatHistory.slice(-20).map(({ role, text }) => ({ role, text })),
+    }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.error || `请求失败（${response.status}）`);
+  if (!result.reply) throw new Error('AI 没有返回内容，请再试一次。');
+  return result;
+}
+async function sendMessage(text) {
   const clean = text.trim();
   if (!clean && !selectedFiles.length) return;
   const attachmentNames = selectedFiles.map((file) => file.name);
-  const visibleText = [clean, attachmentNames.length ? `📎 ${attachmentNames.join('、')}` : ''].filter(Boolean).join('\n\n');
+  const visibleText = [clean, attachmentNames.length ? `📎 ${attachmentNames.join('、')}（仅发送文件名，暂不读取附件内容）` : ''].filter(Boolean).join('\n\n');
   appendMessage(visibleText,'user');
   chatHistory.push({role:'user',text:visibleText});
   selectedFiles = [];
@@ -78,18 +94,23 @@ function sendMessage(text) {
   typing.innerHTML = '<span class="message-avatar">m</span><div class="message-content"><span class="message-author">Mori <time>正在思考</time></span><div class="bubble typing-bubble"><i></i><i></i><i></i></div></div>';
   messages.appendChild(typing);
   messages.scrollTop = messages.scrollHeight;
-  activeReplies += 1;
-  setAvatarReplying(true);
-  setTimeout(() => {
-    typing.remove();
-    let reply = buildReply(clean);
-    if (replyTone === '简洁') reply = reply.split('\n\n').slice(0,2).join('\n\n');
+  setReplyState(true);
+  try {
+    const result = await requestMoriReply();
+    let reply = result.reply.trim();
+    if (replyTone === '简洁') reply = reply.split('\n\n').slice(0,3).join('\n\n');
     if (replyTone === '活泼') reply += '\n\n走吧～我们一起把它变有趣！✌️';
-    appendMessage(reply,'assistant');
+    typing.remove();
+    appendMessage(reply,'assistant', Array.isArray(result.sources) ? result.sources : []);
     chatHistory.push({role:'assistant',text:reply});
-    activeReplies = Math.max(0, activeReplies - 1);
-    if (!activeReplies) setAvatarReplying(false);
-  }, 650 + Math.random()*450);
+    if (localStorage.getItem('mori.voice.v1') !== '0') speakText(reply);
+  } catch (error) {
+    typing.remove();
+    appendMessage(`我这次没能连上 AI：${error.message}\n\n请检查服务端是否已配置 AI_API_KEY，并确认网络连接正常。`,'assistant');
+    console.error('Mori chat request failed:', error);
+  } finally {
+    setReplyState(false);
+  }
 }
 form.addEventListener('submit',(event) => { event.preventDefault(); sendMessage(input.value); });
 input.addEventListener('keydown',(event) => {
@@ -97,9 +118,30 @@ input.addEventListener('keydown',(event) => {
 });
 input.addEventListener('input',() => { input.style.height = '31px'; input.style.height = `${Math.min(input.scrollHeight,96)}px`; });
 document.querySelectorAll('.suggestion').forEach((button) => button.addEventListener('click',() => sendMessage(button.dataset.prompt)));
+function speakText(text) {
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+    showToast('当前浏览器不支持语音朗读');
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'zh-CN';
+  utterance.rate = 0.96;
+  const chineseVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith('zh'));
+  if (chineseVoice) utterance.voice = chineseVoice;
+  utterance.onstart = () => { voiceSpeaking = true; updateAvatarActivity(); };
+  utterance.onend = () => { voiceSpeaking = false; updateAvatarActivity(); };
+  utterance.onerror = () => { voiceSpeaking = false; updateAvatarActivity(); };
+  window.speechSynthesis.speak(utterance);
+}
 messages.addEventListener('click',(event) => {
   const button = event.target.closest('.reaction');
   if (!button) return;
+  if (button.classList.contains('speak-button')) {
+    const bubble = button.closest('.message-content').querySelector('.bubble');
+    speakText(bubble.innerText);
+    return;
+  }
   if (button.getAttribute('aria-label') === '喜欢') {
     button.classList.toggle('liked');
     button.textContent = button.classList.contains('liked') ? '♥' : '♡';
@@ -201,7 +243,7 @@ function renderAttachments() {
     const imageURL = file.type.startsWith('image/') ? URL.createObjectURL(file) : '';
     if (imageURL) attachmentObjectURLs.push(imageURL);
     return `<div class="attachment-chip">${imageURL ? `<img src="${imageURL}" alt="">` : '<span class="file-icon">▤</span>'}<span title="${escapeHTML(file.name)}">${escapeHTML(file.name)}<small>${formatBytes(file.size)}</small></span><button type="button" data-remove-file="${index}" aria-label="移除 ${escapeHTML(file.name)}">×</button></div>`;
-  }).join('') + (selectedFiles.length ? '<small class="attachment-disclaimer">文件只在本页暂存；当前模拟回复不会上传或读取附件内容。</small>' : '');
+  }).join('') + (selectedFiles.length ? '<small class="attachment-disclaimer">附件暂存于本页；暂不上传或读取文件内容，发送时只会告知文件名。</small>' : '');
 }
 function formatBytes(bytes) { return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`; }
 function createSettingsDialog() {
@@ -209,10 +251,11 @@ function createSettingsDialog() {
   const dialog = document.createElement('dialog');
   dialog.id = 'settingsDialog';
   dialog.className = 'settings-dialog';
-  dialog.innerHTML = `<form method="dialog" class="dialog-card"><div class="dialog-heading"><div><span class="tool-eyebrow">YOUR MORI</span><h2>设置</h2></div><button class="dialog-close" aria-label="关闭">×</button></div><section class="setting-row"><div><strong>回复风格</strong><small>选择 Mori 的表达语气</small></div><select id="settingsTone"><option>温柔</option><option>活泼</option><option>简洁</option></select></section><section class="setting-row"><div><strong>减少动态效果</strong><small>适合偏好静态界面的用户</small></div><input id="reduceMotion" type="checkbox"></section><section class="setting-row setting-note"><div><strong>隐私与数据</strong><small>便签和计划仅保存在当前浏览器。聊天目前是本地模拟，不会连接 AI 服务。</small></div></section><div class="dialog-actions"><button type="button" class="quiet-action" data-action="clear-local-data">清除便签和计划</button><button class="primary-action">完成</button></div></form>`;
+  dialog.innerHTML = `<form method="dialog" class="dialog-card"><div class="dialog-heading"><div><span class="tool-eyebrow">YOUR MORI</span><h2>设置</h2></div><button class="dialog-close" aria-label="关闭">×</button></div><section class="setting-row"><div><strong>回复风格</strong><small>选择 Mori 的表达语气</small></div><select id="settingsTone"><option>温柔</option><option>活泼</option><option>简洁</option></select></section><section class="setting-row"><div><strong>自动朗读回复</strong><small>使用浏览器内置中文语音，语音由你的设备生成</small></div><input id="autoVoice" type="checkbox"></section><section class="setting-row"><div><strong>减少动态效果</strong><small>适合偏好静态界面的用户</small></div><input id="reduceMotion" type="checkbox"></section><section class="setting-row setting-note"><div><strong>AI 与隐私</strong><small id="aiServiceStatus">${escapeHTML(aiServiceStatusMessage)}</small></div></section><div class="dialog-actions"><button type="button" class="quiet-action" data-action="clear-local-data">清除便签和计划</button><button class="primary-action">完成</button></div></form>`;
   document.body.appendChild(dialog);
   dialog.addEventListener('change', (event) => {
     if (event.target.id === 'settingsTone') { replyTone = event.target.value; $('#toneBtn').innerHTML = `☼ <span>${replyTone}</span><span class="chevron">⌄</span>`; }
+    if (event.target.id === 'autoVoice') localStorage.setItem('mori.voice.v1', event.target.checked ? '1' : '0');
     if (event.target.id === 'reduceMotion') { localStorage.setItem(STORAGE.motion, event.target.checked ? '1' : '0'); document.documentElement.classList.toggle('reduce-motion', event.target.checked); }
   });
   dialog.addEventListener('click', (event) => {
@@ -248,7 +291,10 @@ $('#upgradeBtn').addEventListener('click',() => showToast('Mori Plus 需要后�
 $('#settingsBtn').addEventListener('click', () => {
   const dialog = createSettingsDialog();
   $('#settingsTone').value = replyTone;
+  $('#autoVoice').checked = localStorage.getItem('mori.voice.v1') !== '0';
   $('#reduceMotion').checked = localStorage.getItem(STORAGE.motion) === '1';
+  $('#aiServiceStatus').textContent = aiServiceStatusMessage;
+  refreshAIServiceStatus();
   dialog.showModal();
 });
 $('#chatMenu').addEventListener('click', () => {
@@ -299,3 +345,17 @@ toolView.addEventListener('change', (event) => {
 });
 if (localStorage.getItem(STORAGE.motion) === '1') document.documentElement.classList.add('reduce-motion');
 $('#todayLabel').textContent = new Intl.DateTimeFormat('zh-CN',{month:'long',day:'numeric'}).format(new Date());
+function refreshAIServiceStatus() {
+  return fetch('/api/status', { cache: 'no-store' }).then((response) => response.ok ? response.json() : null).then((status) => {
+    aiServiceStatusMessage = status?.configured
+      ? '已连接 AI 对话与联网搜索服务。聊天内容会发送到服务端配置的 AI 服务；便签和计划仍只保存在本机。'
+      : 'AI 服务未配置：需要在服务端设置 AI_API_KEY。聊天内容会发送到 AI 服务；便签和计划仍只保存在本机。';
+    const label = $('#aiServiceStatus');
+    if (label) label.textContent = aiServiceStatusMessage;
+  }).catch(() => {
+    aiServiceStatusMessage = 'AI 服务未连接：请使用项目自带的服务端启动，并设置 AI_API_KEY。';
+    const label = $('#aiServiceStatus');
+    if (label) label.textContent = aiServiceStatusMessage;
+  });
+}
+refreshAIServiceStatus();
