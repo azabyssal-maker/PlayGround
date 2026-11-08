@@ -1,0 +1,128 @@
+{
+  "uid": "9c284506f1e247348acd0de4151974d6",
+  "name": "LowPoly Anime Character CyberStyle",
+  "author": "DanlyVostok",
+  "authorUrl": "https://sketchfab.com/1799danly",
+  "license": "CC Attribution",
+  "licenseUrl": null,
+  "modelUrl": "https://sketchfab.com/3d-models/none-9c284506f1e247348acd0de4151974d6",
+  "thumbnailUrl": "https://media.sketchfab.com/models/9c284506f1e247348acd0de4151974d6/thumbnails/297f9a624e934be69385043b265b24a4/52257cb67a8f488cb47c5e6edf13eebf.jpeg",
+  "glbBytes": 11261068,
+  "faceCount": 57923,
+  "vertexCount": 41752,
+  "textureCount": 7,
+  "textureMaxResolution": 4096,
+  "animationCount": 10,
+  "animations": [
+    {
+      "uid": "ef52839c38cf4961a5ca540dce133479",
+      "name": "Armature|Walk",
+      "url": "https://media.sketchfab.com/models/9c284506f1e247348acd0de4151974d6/86be617ffecb475d815cadea4752d53c/animations/ef52839c38cf4961a5ca540dce133479.bin.gz",
+      "size": 560852,
+      "duration": 5.967,
+      "isLoop": false,
+      "isEnabled": true,
+      "createdAt": "2025-09-30T19:00:19.738415",
+      "updatedAt": "2025-09-30T19:00:19.738425"
+    },
+    {
+      "uid": "96927011dae944c0ad2373dc68b90b48",
+      "name": "Armature|Idle",
+      "url": "https://media.sketchfab.com/models/9c284506f1e247348acd0de4151974d6/86be617ffecb475d815cadea4752d53c/animations/96927011dae944c0ad2373dc68b90b48.bin.gz",
+      "size": 556060,
+      "duration": 6.633,
+      "isLoop": false,
+      "isEnabled": true,
+      "createdAt": "2025-09-30T19:00:19.734737",
+      "updatedAt": "2025-09-30T19:00:19.734750"
+    },
+    {
+      "uid": "0fbbf87d540e4cdf84bdcb81f0e9120c",
+      "name": "Armature|BodyDan1|Take 001|BaseLayer",
+      "url": "https://media.sketchfab.com/models/9c284506f1e247348acd0de4151974d6/86be617ffecb475d815cadea4752d53c/animations/0fbbf87d540e4cdf84bdcb81f0e9120c.bin.gz",
+      "size": 312,
+      "duration": 0.0,
+      "isLoop": false,
+      "isEnabled": false,
+      "createdAt": "2025-09-30T19:00:19.731619",
+      "updatedAt": "2025-09-30T19:00:19.731629"
+    },
+    {
+      "uid": "3b04b7a2cb2c4fbd8fb178d55e7c2336",
+      "name": "Armature|Armature|mixamo.com|Layer0",
+      "url": "https://media.sketchfab.com/models/9c284506f1e247348acd0de4151974d6/86be617ffecb475d815cadea4752d53c/animations/3b04b7a2cb2c4fbd8fb178d55e7c2336.bin.gz",
+      "size": 32,
+      "duration": 0.0,
+      "isLoop": false,
+      "isEnabled": false,
+      "createdAt": "2025-09-30T19:00:19.728339",
+      "updatedAt": "2025-09-30T19:00:19.728349"
+    },
+    {
+      "uid": "f1b0745f53e547b9b727c9aa8f2e8c76",
+      "name": "Armature|Armature.001|mixamo.com|Layer0",
+      "url": "https://media.sketchfab.com/models/9c284506f1e247348acd0de4151974d6/86be617ffecb475d815cadea4752d53c/animations/f1b0745f53e547b9b727c9aa8f2e8c76.bin.gz",
+      "size": 45768,
+      "duration": 1.167,
+      "isLoop": false,
+      "isEnabled": false,
+      "createdAt": "2025-09-30T19:00:19.724923",
+      "updatedAt": "2025-09-30T19:00:19.724933"
+    },
+    {
+      "uid": "848928a24e1e4a39b67e1326dde5a480",
+      "name": "Armature|Armature.001|Armature|Idle",
+      "url": "https://media.sketchfab.com/models/9c284506f1e247348acd0de4151974d6/86be617ffecb475d815cadea4752d53c/animations/848928a24e1e4a39b67e1326dde5a480.bin.gz",
+      "size": 57160,
+      "duration": 6.633,
+      "isLoop": false,
+      "isEnabled": false,
+      "createdAt": "2025-09-30T19:00:19.720668",
+      "updatedAt": "2025-09-30T19:00:19.720678"
+    },
+    {
+      "uid": "9f6166d10ffa4477a444c33be79e430d",
+      "name": "Armature|Armature.001|Armature|BodyDan1|Take 001|BaseLayer",
+      "url": "https://media.sketchfab.com/models/9c284506f1e247348acd0de4151974d6/86be617ffecb475d815cadea4752d53c/animations/9f6166d10ffa4477a444c33be79e430d.bin.gz",
+      "size": 512,
+      "duration": 0.0,
+      "isLoop": false,
+      "isEnabled": false,
+      "createdAt": "2025-09-30T19:00:19.717224",
+      "updatedAt": "2025-09-30T19:00:19.717236"
+    },
+    {
+      "uid": "baaffd9dc3834bdb9a5fbe63aa5b074e",
+      "name": "Armature|Armature.001|Armature|Armature|mixamo.com|Layer0",
+      "url": "https://media.sketchfab.com/models/9c284506f1e247348acd0de4151974d6/86be617ffecb475d815cadea4752d53c/animations/baaffd9dc3834bdb9a5fbe63aa5b074e.bin.gz",
+      "size": 312,
+      "duration": 0.0,
+      "isLoop": false,
+      "isEnabled": false,
+      "createdAt": "2025-09-30T19:00:19.713984",
+      "updatedAt": "2025-09-30T19:00:19.713996"
+    },
+    {
+      "uid": "5d4d8142440541929cb688726252482c",
+      "name": "Armature|Armature.001|Armature|ArmatureAction.001",
+      "url": "https://media.sketchfab.com/models/9c284506f1e247348acd0de4151974d6/86be617ffecb475d815cadea4752d53c/animations/5d4d8142440541929cb688726252482c.bin.gz",
+      "size": 260,
+      "duration": 0.0,
+      "isLoop": false,
+      "isEnabled": false,
+      "createdAt": "2025-09-30T19:00:19.710702",
+      "updatedAt": "2025-09-30T19:00:19.710716"
+    },
+    {
+      "uid": "c6398f0df4424a508ac52ff6a6a7c99e",
+      "name": "Armature|Action",
+      "url": "https://media.sketchfab.com/models/9c284506f1e247348acd0de4151974d6/86be617ffecb475d815cadea4752d53c/animations/c6398f0df4424a508ac52ff6a6a7c99e.bin.gz",
+      "size": 51528,
+      "duration": 1.167,
+      "isLoop": false,
+      "isEnabled": false,
+      "createdAt": "2025-09-30T19:00:19.706716",
+      "updatedAt": "2025-09-30T19:00:19.706732"
+    }
+  ]
+}
