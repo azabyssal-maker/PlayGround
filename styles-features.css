@@ -60,5 +60,9 @@
 .dialog-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 12px; }
 .dialog-actions .quiet-action { padding: 0 10px; color: #a46174; }
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+.message-sources { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 2px; color: #9693a2; font-size: 10px; }
+.message-sources a { max-width: 100%; padding: 3px 7px; overflow: hidden; border-radius: 7px; color: #7765d0; background: #f3f0ff; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+.message-sources a:hover { text-decoration: underline; }
+.speak-button { font-size: 12px !important; }
 @media (max-width: 800px) { .tool-view { min-height: 600px; padding: 26px 20px; } }
 @media (max-width: 480px) { .tool-view { min-height: 560px; padding: 22px 15px; } .tool-heading { gap: 10px; } .tool-heading h2 { font-size: 21px; } .tool-heading p { font-size: 11px; line-height: 1.6; } .tool-heading > .primary-action { padding: 0 11px; font-size: 11px; white-space: nowrap; } .task-form { gap: 6px; } .task-form .primary-action { padding: 0 10px; font-size: 11px; white-space: nowrap; } .dialog-card { padding: 20px; } .dialog-actions .quiet-action { font-size: 10px; } }
