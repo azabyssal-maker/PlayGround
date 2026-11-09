@@ -8,6 +8,8 @@ let replyTone = '温柔';
 let chatHistory = [];
 let activeReplies = 0;
 let aiServiceStatusMessage = '正在检查 AI 服务…聊天内容会发送到你配置的 AI 服务；便签和计划仍只保存在本机。';
+let aiServiceConfigured = false;
+let offlineReplyIndex = 0;
 
 function setAvatarReplying(isReplying) {
   const character = $('#character');
@@ -78,6 +80,23 @@ async function requestMoriReply() {
   if (!result.reply) throw new Error('AI 没有返回内容，请再试一次。');
   return result;
 }
+function makeOfflineReply() {
+  const latest = chatHistory.filter((item) => item.role === 'user').at(-1)?.text || '';
+  const group = replyGroups.find((item) => item.match.test(latest));
+  let reply;
+  if (group) {
+    reply = group.replies[offlineReplyIndex % group.replies.length];
+    offlineReplyIndex += 1;
+  } else if (/附件|📎/.test(latest)) {
+    reply = '我看到你添加了附件，不过本地陪伴模式还不能读取文件内容。你可以把最重要的文字粘贴到消息里，我就能继续帮你一起整理。';
+  } else {
+    reply = `我听到你说：「${latest.slice(0, 100)}${latest.length > 100 ? '…' : ''}」。\n\n我现在没有连接云端 AI，但仍可以陪你梳理思路。你希望我先帮你分析、列一个小计划，还是只是认真听你说说？`;
+  }
+  const notice = aiServiceConfigured
+    ? '（云端 AI 暂时不可用，我先用本地陪伴模式回应你。）\n\n'
+    : '（当前是本地陪伴模式；配置 AI_API_KEY 后可开启更自由的 AI 对话。）\n\n';
+  return notice + reply;
+}
 async function sendMessage(text) {
   const clean = text.trim();
   if (!clean && !selectedFiles.length) return;
@@ -106,8 +125,11 @@ async function sendMessage(text) {
     if (localStorage.getItem('mori.voice.v1') !== '0') speakText(reply);
   } catch (error) {
     typing.remove();
-    appendMessage(`我这次没能连上 AI：${error.message}\n\n请检查服务端是否已配置 AI_API_KEY，并确认网络连接正常。`,'assistant');
-    console.error('Mori chat request failed:', error);
+    const reply = makeOfflineReply();
+    appendMessage(reply,'assistant');
+    chatHistory.push({role:'assistant',text:reply});
+    if (localStorage.getItem('mori.voice.v1') !== '0') speakText(reply);
+    if (aiServiceConfigured) console.warn('Cloud chat unavailable; used local companion reply:', error.message);
   } finally {
     setReplyState(false);
   }
@@ -347,9 +369,10 @@ if (localStorage.getItem(STORAGE.motion) === '1') document.documentElement.class
 $('#todayLabel').textContent = new Intl.DateTimeFormat('zh-CN',{month:'long',day:'numeric'}).format(new Date());
 function refreshAIServiceStatus() {
   return fetch('/api/status', { cache: 'no-store' }).then((response) => response.ok ? response.json() : null).then((status) => {
-    aiServiceStatusMessage = status?.configured
+    aiServiceConfigured = Boolean(status?.configured);
+    aiServiceStatusMessage = aiServiceConfigured
       ? '已连接 AI 对话与联网搜索服务。聊天内容会发送到服务端配置的 AI 服务；便签和计划仍只保存在本机。'
-      : 'AI 服务未配置：需要在服务端设置 AI_API_KEY。聊天内容会发送到 AI 服务；便签和计划仍只保存在本机。';
+      : 'AI 服务未配置：现在可使用本地陪伴回复；设置 AI_API_KEY 后可开启云端 AI。便签和计划仍只保存在本机。';
     const label = $('#aiServiceStatus');
     if (label) label.textContent = aiServiceStatusMessage;
   }).catch(() => {
