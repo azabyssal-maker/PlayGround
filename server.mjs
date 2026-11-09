@@ -3,7 +3,7 @@ import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(process.env.STATIC_DIR || path.dirname(fileURLToPath(import.meta.url)));
 const PORT = Number(process.env.PORT || 3000);
 const API_KEY = process.env.AI_API_KEY || process.env.GEMINI_API_KEY;
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
