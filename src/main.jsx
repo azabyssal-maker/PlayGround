@@ -4,23 +4,17 @@ import { Search, Smartphone, Monitor, Globe2, ChevronRight, Play, Gamepad2, Menu
 import './styles.css';
 
 const games = [
-  { title:'GRAND THEFT AUTO V', tag:'官方云入口', meta:'动作冒险', rating:'云支持待核验', accent:'#e9a12e', art:'gta', featured:true, source:'Xbox 官方入口' },
-  { title:'ROBLOX', tag:'官方平台', meta:'UGC / 社交', rating:'免费入口', accent:'#a76cff', art:'race', source:'Roblox 官方入口' },
-  { title:'FORTNITE', tag:'官方平台', meta:'多人竞技', rating:'免费游玩', accent:'#65b9ff', art:'void', source:'GeForce NOW' },
-  { title:'CYBERPUNK 2077', tag:'自有副本', meta:'角色扮演', rating:'需账号授权', accent:'#d9b95d', art:'shadow', source:'Boosteroid / 自建网关' },
-  { title:'ELDEN RING', tag:'自有副本', meta:'动作角色扮演', rating:'需账号授权', accent:'#f06a4f', art:'iron', source:'GeForce NOW / 自建网关' },
-  { title:'FORZA HORIZON 5', tag:'官方云入口', meta:'竞速', rating:'账号支持', accent:'#52d8db', art:'sky', source:'Xbox 官方入口' }
+  { title:'GRAND THEFT AUTO V', tag:'官方云入口', meta:'动作冒险', rating:'云支持待核验', accent:'#e9a12e', art:'gtav', image:'/game-art/gtav-1.jpg', source:'Steam 官方商店画面 · Xbox 官方入口', sourceUrl:'https://store.steampowered.com/app/271590/Grand_Theft_Auto_V/', featured:true },
+  { title:'GARRY\'S MOD', tag:'官方商店', meta:'沙盒 / 创意', rating:'免费串流网关', accent:'#65b9ff', art:'garrysmod', image:'/game-art/garrysmod-1.jpg', source:'Steam 官方商店画面', sourceUrl:'https://store.steampowered.com/app/4000/Garrys_Mod/' },
+  { title:'CYBERPUNK 2077', tag:'自有副本', meta:'角色扮演', rating:'需账号授权', accent:'#d9b95d', art:'cyberpunk', image:'/game-art/cyberpunk-1.jpg', source:'Steam 官方商店画面', sourceUrl:'https://store.steampowered.com/app/1091500/Cyberpunk_2077/' },
+  { title:'ELDEN RING', tag:'自有副本', meta:'动作角色扮演', rating:'需账号授权', accent:'#f06a4f', art:'elden', image:'/game-art/elden-1.jpg', source:'Steam 官方商店画面', sourceUrl:'https://store.steampowered.com/app/1245620/ELDEN_RING/' },
+  { title:'FORZA HORIZON 5', tag:'官方云入口', meta:'竞速', rating:'账号支持', accent:'#52d8db', art:'forza', image:'/game-art/forza-1.jpg', source:'Steam 官方商店画面 · Xbox 官方入口', sourceUrl:'https://store.steampowered.com/app/1551360/Forza_Horizon_5/' }
 ];
 
 function Cover({game, big=false}) {
-  return <div className={`cover ${game.art} ${big?'big':''}`}>
-    <div className="cover-noise"/><div className="cover-glow"/>
-    {game.art==='gta'&&<><div className="city sun"/><div className="hero-silhouette"/><div className="car-silhouette"/><div className="cover-title">CRIMSON<br/><b>CITY</b></div></>}
-    {game.art==='race'&&<><div className="speed-lines"/><div className="race-car"/><div className="cover-title mini">NEON<br/><b>VELOCITY</b></div></>}
-    {game.art==='void'&&<><div className="planet"/><div className="astronaut"/><div className="cover-title mini">VOID<br/><b>EXODUS</b></div></>}
-    {game.art==='shadow'&&<><div className="moon"/><div className="shadow-agent"/><div className="cover-title mini">SHADOW<br/><b>PROTOCOL</b></div></>}
-    {game.art==='iron'&&<><div className="desert"/><div className="mech"/><div className="cover-title mini">IRON<br/><b>FRONTIER</b></div></>}
-    {game.art==='sky'&&<><div className="skyline"/><div className="glider"/><div className="cover-title mini">SKYLINE<br/><b>RUN</b></div></>}
+  return <div className={`cover real-art ${game.art} ${big?'big':''}`}>
+    <img src={game.image} alt={`${game.title} 官方商店画面`}/>
+    {big&&<a className="art-source" href={game.sourceUrl} target="_blank" rel="noreferrer">真实画面来源：{game.source}</a>}
   </div>
 }
 
@@ -86,10 +80,10 @@ function App(){
    <div className="hero-shade"/>
    <div className="hero-copy">
     <div className="eyebrow"><i/> 编辑推荐 · 浏览器串流工作台</div>
-    <h1>CRIMSON<br/><em>CITY</em></h1>
-    <p>在罪恶与自由交织的都市中，书写属于你的传奇。</p>
+    <h1>GRAND THEFT<br/><em>AUTO V</em></h1>
+    <p>真实画面来自官方 Steam 商店；启动需通过 Xbox、已授权副本或已部署串流网关。</p>
     <div className="chips"><span>开放世界</span><span>动作冒险</span><span>单人</span></div>
-    <div className="hero-actions"><button className="play" onClick={()=>openLauncher('Crimson City')}><Play fill="currentColor"/> 选择授权来源</button><button className="details">查看详情 <ChevronRight/></button></div>
+    <div className="hero-actions"><button className="play" onClick={()=>openLauncher('GRAND THEFT AUTO V')}><Play fill="currentColor"/> 选择授权来源</button><button className="details" onClick={()=>window.open(games[0].sourceUrl,'_blank','noopener,noreferrer')}>查看官方画面 <ChevronRight/></button></div>
    </div>
    <div className="hero-info"><div><span>玩家评分</span><b>9.4</b></div><div className="bars"><i/><i/><i/><i/><i/></div></div>
   </section>
