@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Search, Download, Smartphone, Monitor, Globe2, ChevronRight, Play, Gamepad2, Menu, X, CircleUser, Maximize2, Link2, Wifi, Unplug } from 'lucide-react';
+import { Search, Smartphone, Monitor, Globe2, ChevronRight, Play, Gamepad2, Menu, X, CircleUser, Maximize2, Link2, Wifi, Unplug, ExternalLink } from 'lucide-react';
 import './styles.css';
 
 const games = [
-  { title:'CRIMSON CITY', tag:'OPEN WORLD', meta:'ACTION', rating:'9.4', accent:'#e9a12e', art:'gta', featured:true },
-  { title:'NEON VELOCITY', tag:'NEW RELEASE', meta:'RACING', rating:'9.1', accent:'#a76cff', art:'race' },
-  { title:'VOID EXODUS', tag:'TOP 10', meta:'SCI-FI RPG', rating:'9.3', accent:'#65b9ff', art:'void' },
-  { title:'SHADOW PROTOCOL', tag:'NEW', meta:'STEALTH', rating:'8.9', accent:'#d9b95d', art:'shadow' },
-  { title:'IRON FRONTIER', tag:'POPULAR', meta:'SURVIVAL', rating:'8.7', accent:'#f06a4f', art:'iron' },
-  { title:'SKYLINE RUN', tag:'TRENDING', meta:'ARCADE', rating:'8.8', accent:'#52d8db', art:'sky' }
+  { title:'GRAND THEFT AUTO V', tag:'官方云入口', meta:'动作冒险', rating:'云支持待核验', accent:'#e9a12e', art:'gta', featured:true, source:'Xbox 官方入口' },
+  { title:'ROBLOX', tag:'官方平台', meta:'UGC / 社交', rating:'免费入口', accent:'#a76cff', art:'race', source:'Roblox 官方入口' },
+  { title:'FORTNITE', tag:'官方平台', meta:'多人竞技', rating:'免费游玩', accent:'#65b9ff', art:'void', source:'GeForce NOW' },
+  { title:'CYBERPUNK 2077', tag:'自有副本', meta:'角色扮演', rating:'需账号授权', accent:'#d9b95d', art:'shadow', source:'Boosteroid / 自建网关' },
+  { title:'ELDEN RING', tag:'自有副本', meta:'动作角色扮演', rating:'需账号授权', accent:'#f06a4f', art:'iron', source:'GeForce NOW / 自建网关' },
+  { title:'FORZA HORIZON 5', tag:'官方云入口', meta:'竞速', rating:'账号支持', accent:'#52d8db', art:'sky', source:'Xbox 官方入口' }
 ];
 
 function Cover({game, big=false}) {
@@ -37,7 +37,7 @@ function App(){
    try {
      const r=await fetch(`${base.replace(/\/$/,'')}/sessions/${id}`); if(!r.ok) throw new Error('状态接口不可用');
      const data=await r.json(); setSession(s=>({...s,status:data.status||'unknown',message:data.message||''}));
-     if(['connected','ready','running'].includes(String(data.status).toLowerState?.()||String(data.status).toLowerCase())) flash('云会话已连接');
+     if(['connected','ready','running'].includes(String(data.status).toLowerCase())) flash('云会话已连接');
    } catch(e){setSession(s=>s?{...s,status:'unavailable',message:e.message}:s)}
  };
  const start=async(source)=>{
