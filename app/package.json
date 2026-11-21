@@ -1,0 +1,1 @@
+{"scripts":{"start":"python3 -m http.server 3002","dev":"python3 -m http.server 3002"}
