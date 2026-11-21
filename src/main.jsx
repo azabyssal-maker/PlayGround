@@ -20,17 +20,23 @@ function Cover({game, big=false}) {
 
 function App(){
  const [menu,setMenu]=useState(false), [search,setSearch]=useState(false), [notice,setNotice]=useState('');
- const [launcher,setLauncher]=useState(null), [gateway,setGateway]=useState(''), [session,setSession]=useState(null), [controller,setController]=useState(false);
- const pollRef=useRef(null);
+ const [launcher,setLauncher]=useState(null), [gateway,setGateway]=useState(()=>localStorage.getItem('cloudGateway')||''), [session,setSession]=useState(null), [controller,setController]=useState(false);
+ const [joystick,setJoystick]=useState({x:0,y:0});
+ const pollRef=useRef(null), inputSocketRef=useRef(null), joystickRef=useRef(null);
 
- useEffect(()=>()=>{if(pollRef.current)clearInterval(pollRef.current)},[]);
+ useEffect(()=>()=>{if(pollRef.current)clearInterval(pollRef.current);inputSocketRef.current?.close()},[]);
 
  const flash=(text)=>{setNotice(text);window.clearTimeout(window.__flash);window.__flash=setTimeout(()=>setNotice(''),3000)};
+ const sendInput=(type,value={})=>{const socket=inputSocketRef.current;if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify({type,...value}))};
+ const connectInput=(data)=>{inputSocketRef.current?.close();if(!data.inputUrl)return;try{const ws=new WebSocket(data.inputUrl);inputSocketRef.current=ws;ws.onopen=()=>sendInput('controller',{connected:true})}catch(e){flash('输入通道无法连接')}};
+ const moveJoystick=(e)=>{const el=joystickRef.current;if(!el)return;const rect=el.getBoundingClientRect();const point=e.touches?.[0]||e;const dx=(point.clientX-(rect.left+rect.width/2))/(rect.width/2);const dy=(point.clientY-(rect.top+rect.height/2))/(rect.height/2);const x=Math.abs(dx)<.08?0:Math.max(-1,Math.min(1,dx));const y=Math.abs(dy)<.08?0:Math.max(-1,Math.min(1,dy));setJoystick({x,y});sendInput('axis',{axis:'left',x,y})};
+ const stopJoystick=()=>{setJoystick({x:0,y:0});sendInput('axis',{axis:'left',x:0,y:0})};
  const openLauncher=(title)=>setLauncher({title});
  const pollGateway=async(base,id)=>{
    try {
      const r=await fetch(`${base.replace(/\/$/,'')}/sessions/${id}`); if(!r.ok) throw new Error('状态接口不可用');
-     const data=await r.json(); setSession(s=>({...s,status:data.status||'unknown',message:data.message||''}));
+     const data=await r.json(); setSession(s=>({...s,status:data.status||'unknown',streamUrl:data.streamUrl||s.streamUrl,inputUrl:data.inputUrl||s.inputUrl,message:data.message||''}));
+     if(data.inputUrl&&!inputSocketRef.current)connectInput(data);
      if(['connected','ready','running'].includes(String(data.status).toLowerCase())) flash('云会话已连接');
    } catch(e){setSession(s=>s?{...s,status:'unavailable',message:e.message}:s)}
  };
@@ -43,7 +49,9 @@ function App(){
      const r=await fetch(`${base}/sessions`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:launcher.title})});
      if(!r.ok)throw new Error(`网关创建失败（${r.status}）`);
      const data=await r.json(); if(!data.id)throw new Error('网关未返回会话 ID');
-     setSession({id:data.id,status:'creating',streamUrl:data.streamUrl||null,message:'会话已创建，正在轮询状态'});
+     localStorage.setItem('cloudGateway',base);
+     setSession({id:data.id,status:'creating',streamUrl:data.streamUrl||null,inputUrl:data.inputUrl||null,message:'会话已创建，正在轮询状态'});
+     connectInput(data);
      if(pollRef.current)clearInterval(pollRef.current);pollRef.current=setInterval(()=>pollGateway(base,data.id),1500);
      setLauncher(null);setController(true);
    }catch(e){flash(e.message)}
@@ -70,7 +78,7 @@ function App(){
    {controller&&<div className="touch-controls">
     <div className="joystick"><span/></div>
     <div className="triggers"><button>LT</button><button>RT</button></div>
-    <div className="face"><button className="y">Y</button><button className="x">X</button><button className="b">B</button><button className="a">A</button></div>
+    <div className="face"><button className="y" onPointerDown={()=>sendInput('button',{button:'Y',pressed:true})} onPointerUp={()=>sendInput('button',{button:'Y',pressed:false})}>Y</button><button className="x" onPointerDown={()=>sendInput('button',{button:'X',pressed:true})} onPointerUp={()=>sendInput('button',{button:'X',pressed:false})}>X</button><button className="b" onPointerDown={()=>sendInput('button',{button:'B',pressed:true})} onPointerUp={()=>sendInput('button',{button:'B',pressed:false})}>B</button><button className="a" onPointerDown={()=>sendInput('button',{button:'A',pressed:true})} onPointerUp={()=>sendInput('button',{button:'A',pressed:false})}>A</button></div>
     <div className="menu-controls"><button>MENU</button><button>+</button></div>
    </div>}
   </section>}
