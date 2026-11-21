@@ -21,7 +21,8 @@ function Cover({game, big=false}) {
 function App(){
  const [menu,setMenu]=useState(false), [search,setSearch]=useState(false), [notice,setNotice]=useState('');
  const [launcher,setLauncher]=useState(null), [gateway,setGateway]=useState(()=>localStorage.getItem('cloudGateway')||''), [session,setSession]=useState(null), [controller,setController]=useState(false);
- const [joystick,setJoystick]=useState({x:0,y:0});
+ const [joystick,setJoystick]=useState({x:0,y:0}), [searchQuery,setSearchQuery]=useState(''), [navSection,setNavSection]=useState('发现'), [showAll,setShowAll]=useState(false);
+ const filteredGames=games.filter(g=>`${g.title} ${g.meta} ${g.tag}`.toLowerCase().includes(searchQuery.trim().toLowerCase()));
  const pollRef=useRef(null), inputSocketRef=useRef(null), joystickRef=useRef(null);
 
  useEffect(()=>()=>{if(pollRef.current)clearInterval(pollRef.current);inputSocketRef.current?.close()},[]);
@@ -31,6 +32,9 @@ function App(){
  const connectInput=(data)=>{inputSocketRef.current?.close();if(!data.inputUrl)return;try{const ws=new WebSocket(data.inputUrl);inputSocketRef.current=ws;ws.onopen=()=>sendInput('controller',{connected:true})}catch(e){flash('输入通道无法连接')}};
  const moveJoystick=(e)=>{const el=joystickRef.current;if(!el)return;const rect=el.getBoundingClientRect();const point=e.touches?.[0]||e;const dx=(point.clientX-(rect.left+rect.width/2))/(rect.width/2);const dy=(point.clientY-(rect.top+rect.height/2))/(rect.height/2);const x=Math.abs(dx)<.08?0:Math.max(-1,Math.min(1,dx));const y=Math.abs(dy)<.08?0:Math.max(-1,Math.min(1,dy));setJoystick({x,y});sendInput('axis',{axis:'left',x,y})};
  const stopJoystick=()=>{setJoystick({x:0,y:0});sendInput('axis',{axis:'left',x:0,y:0})};
+ const sendButton=(button,pressed)=>sendInput('button',{button,pressed});
+ const pressTrigger=(button,pressed)=>sendInput('trigger',{button,pressed,value:pressed?1:0});
+ const selectNav=(name)=>{setNavSection(name);setMenu(false);if(name==='发现')window.scrollTo({top:0,behavior:'smooth'});if(name==='游戏库')document.querySelector('.shelf')?.scrollIntoView({behavior:'smooth'});if(name==='动态')document.querySelector('.devices')?.scrollIntoView({behavior:'smooth'})};
  const openLauncher=(title)=>setLauncher({title});
  const pollGateway=async(base,id)=>{
    try {
@@ -67,19 +71,19 @@ function App(){
   <header className="nav">
    <button className="menu-button" onClick={()=>setMenu(v=>!v)}>{menu?<X/>:<Menu/>}</button>
    <div className="logo"><div className="logo-mark"><Gamepad2/></div><div><b>PLAY</b><span>HORIZON</span></div></div>
-   <nav className={menu?'open':''}><a className="active">发现</a><a>游戏库</a><a>动态</a></nav>
-   <div className="nav-right"><button className="search" onClick={()=>setSearch(v=>!v)}><Search/><span>搜索游戏</span></button><button className="profile"><CircleUser/></button></div>
+   <nav className={menu?'open':''}>{['发现','游戏库','动态'].map(name=><a key={name} className={navSection===name?'active':''} onClick={()=>selectNav(name)}>{name}</a>) }</nav>
+   <div className="nav-right"><button className="search" onClick={()=>setSearch(v=>!v)} aria-label="搜索游戏"><Search/><span>搜索游戏</span></button><button className="profile" onClick={()=>flash(gateway?'已保存 Moonlight 网关':'尚未配置授权网关')} aria-label="授权状态"><CircleUser/></button></div>
   </header>
-  {search&&<div className="searchbar"><Search/><input autoFocus placeholder="搜索游戏、开发者或分类"/><button onClick={()=>setSearch(false)}><X/></button></div>}
+  {search&&<div className="searchbar"><Search/><input autoFocus value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} placeholder="搜索游戏、开发者或分类"/><button onClick={()=>{setSearch(false);setSearchQuery('')}} aria-label="关闭搜索"><X/></button></div>}
 
   {session&&<section className="stream-stage" id="stream-stage">
    {session.streamUrl?<iframe title="云游戏串流" src={session.streamUrl} allow="fullscreen; autoplay"/>:<div className="stream-placeholder"><Wifi/><b>{session.status==='connected'||session.status==='running'?'串流已连接':'正在连接云会话'}</b><span>会话 {session.id} · {session.status}</span></div>}
    <div className="session-bar"><div><i className={session.status==='connected'?'live':''}/><b>授权工作台</b><span>{session.status}</span></div><button onClick={fullscreen}><Maximize2/> 全屏</button><button onClick={disconnect}><Unplug/> 断开</button></div>
    {controller&&<div className="touch-controls">
-    <div className="joystick"><span/></div>
-    <div className="triggers"><button>LT</button><button>RT</button></div>
+    <div ref={joystickRef} className="joystick" onPointerDown={e=>{e.currentTarget.setPointerCapture?.(e.pointerId);moveJoystick(e)}} onPointerMove={e=>{if(e.currentTarget.hasPointerCapture?.(e.pointerId))moveJoystick(e)}} onPointerUp={stopJoystick} onPointerCancel={stopJoystick}><span style={{transform:`translate(${joystick.x*28}px,${joystick.y*28}px)`}}/></div>
+    <div className="triggers"><button onPointerDown={()=>pressTrigger('LT',true)} onPointerUp={()=>pressTrigger('LT',false)} onPointerCancel={()=>pressTrigger('LT',false)}>LT</button><button onPointerDown={()=>pressTrigger('RT',true)} onPointerUp={()=>pressTrigger('RT',false)} onPointerCancel={()=>pressTrigger('RT',false)}>RT</button></div>
     <div className="face"><button className="y" onPointerDown={()=>sendInput('button',{button:'Y',pressed:true})} onPointerUp={()=>sendInput('button',{button:'Y',pressed:false})}>Y</button><button className="x" onPointerDown={()=>sendInput('button',{button:'X',pressed:true})} onPointerUp={()=>sendInput('button',{button:'X',pressed:false})}>X</button><button className="b" onPointerDown={()=>sendInput('button',{button:'B',pressed:true})} onPointerUp={()=>sendInput('button',{button:'B',pressed:false})}>B</button><button className="a" onPointerDown={()=>sendInput('button',{button:'A',pressed:true})} onPointerUp={()=>sendInput('button',{button:'A',pressed:false})}>A</button></div>
-    <div className="menu-controls"><button>MENU</button><button>+</button></div>
+    <div className="menu-controls"><button onPointerDown={()=>sendButton('MENU',true)} onPointerUp={()=>sendButton('MENU',false)}>MENU</button><button onPointerDown={()=>sendButton('PLUS',true)} onPointerUp={()=>sendButton('PLUS',false)}>+</button></div>
    </div>}
   </section>}
 
@@ -96,8 +100,8 @@ function App(){
    <div className="hero-info"><div><span>玩家评分</span><b>9.4</b></div><div className="bars"><i/><i/><i/><i/><i/></div></div>
   </section>
 
-  <section className="shelf"><div className="section-head"><div><span>精选推荐</span><h2>热门游戏</h2></div><button>全部游戏 <ChevronRight/></button></div>
-   <div className="game-grid">{games.slice(1).map((g,i)=><article className="game-card" key={g.title} onClick={()=>openLauncher(g.title)}>
+  <section className="shelf"><div className="section-head"><div><span>精选推荐</span><h2>热门游戏</h2></div><button onClick={()=>{setShowAll(v=>!v);setSearchQuery('')}}>{showAll?'收起':'全部游戏'} <ChevronRight/></button></div>
+   <div className="game-grid">{(showAll?games.slice(0):searchQuery?filteredGames.slice(1):games.slice(1)).map((g,i)=><article className="game-card" key={g.title} onClick={()=>openLauncher(g.title)}>
     <div className="card-art"><Cover game={g}/><div className="tag">{g.tag}</div><button className="card-play"><Play fill="currentColor"/></button></div>
     <div className="card-info"><div><h3>{g.title}</h3><span>{g.meta}</span></div><b>{g.rating}</b></div>
    </article>)}</div>
